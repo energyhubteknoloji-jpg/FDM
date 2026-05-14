@@ -25,11 +25,11 @@
     ],
     "win": {
       "target": "nsis",
-      "extraResources": ["./api_server.exe"]
+      "extraResources": ["api_server.exe"]
     },
     "mac": {
       "target": "dmg",
-      "extraResources": ["./api_server_mac"]
+      "extraResources": ["api_server_mac"]
     },
     "nsis": {
       "oneClick": true,
@@ -45,7 +45,7 @@
     "@types/node": "^25.6.2",
     "concurrently": "^8.2.2",
     "electron": "^30.0.0",
-    "electron-builder": "^24.13.3",
+    "electron-builder": "^24.15.0",
     "wait-on": "^7.2.0"
   }
 }
