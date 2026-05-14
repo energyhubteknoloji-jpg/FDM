@@ -18,7 +18,10 @@
     },
     "files": [
       "main.js",
-      "package.json"
+      "package.json",
+      "static/**/*",
+      "templates/**/*",
+      "*.py"
     ],
     "win": {
       "target": "nsis",
