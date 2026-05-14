@@ -18,9 +18,7 @@
     },
     "files": [
       "main.js",
-      "package.json",
-      "api_server.exe",
-      "api_server_mac"
+      "package.json"
     ],
     "win": {
       "target": "nsis",
