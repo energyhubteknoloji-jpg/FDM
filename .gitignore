@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+dist/
+build/
+*.spec
+api_server_mac
+api_server.exe
+
+# Electron / Node
+node_modules/
+dist_setup/
+dist/
+
+# Database & Logs
+*.db
+*.log
+.fdmsensor_desktop/
+
+# OS
+.DS_Store
+Thumbs.db

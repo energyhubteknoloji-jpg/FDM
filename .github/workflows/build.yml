@@ -1,0 +1,72 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: 'FDMSensor-Desktop/package-lock.json'
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Python Dependencies
+        run: |
+          cd FDMSensor-Desktop
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build Python Server (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd FDMSensor-Desktop
+          pyinstaller --name api_server --onefile --noconsole --add-data "templates;templates" --add-data "static;static" --hidden-import waitress --hidden-import sqlalchemy --hidden-import flask_login --hidden-import flask_wtf --hidden-import openpyxl --hidden-import pandas --hidden-import db_sqlite --hidden-import scraper --hidden-import weather_service --hidden-import simulation_engine --hidden-import jaraco --hidden-import jaraco.text --hidden-import jaraco.functools --hidden-import jaraco.context api_server.py
+          copy dist\api_server.exe .
+
+      - name: Build Python Server (Mac)
+        if: matrix.os == 'macos-latest'
+        run: |
+          cd FDMSensor-Desktop
+          pyinstaller --name api_server_mac --onefile --noconsole --add-data "templates:templates" --add-data "static:static" --hidden-import waitress --hidden-import sqlalchemy --hidden-import flask_login --hidden-import flask_wtf --hidden-import openpyxl --hidden-import pandas --hidden-import db_sqlite --hidden-import scraper --hidden-import weather_service --hidden-import simulation_engine --hidden-import jaraco --hidden-import jaraco.text --hidden-import jaraco.functools --hidden-import jaraco.context api_server.py
+          cp dist/api_server_mac .
+
+      - name: Install Node Dependencies
+        run: |
+          cd FDMSensor-Desktop
+          npm install
+
+      - name: Build Electron App
+        run: |
+          cd FDMSensor-Desktop
+          npm run dist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: installers-${{ matrix.os }}
+          path: |
+            FDMSensor-Desktop/dist/*.exe
+            FDMSensor-Desktop/dist/*.dmg

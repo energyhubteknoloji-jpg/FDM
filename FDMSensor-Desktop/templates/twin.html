@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Trafo Dijital İkiz</title>
+    <!-- Fonts -->
+    <style>
+        body { font-family: 'Rajdhani', system-ui, -apple-system, monospace; }
+    </style>    <!-- Chart.js -->
+    <script src="{{ url_for('static', filename='vendor/chart.js') }}"></script>
+
+    <script async src="{{ url_for('static', filename='vendor/node_modules/es-module-shims/dist/es-module-shims.js') }}"></script>
+
+    <!-- Three.js Import Map -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "{{ url_for('static', filename='vendor/node_modules/three/build/three.module.js') }}",
+            "three/addons/": "{{ url_for('static', filename='vendor/node_modules/three/examples/jsm/') }}"
+        }
+    }
+    </script>
+
+    <style>
+        :root {
+            --bg-dark: #0f1115;
+            --bg-panel: rgba(22, 27, 34, 0.85);
+            --border: rgba(56, 189, 248, 0.2);
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent-red: #ff4d4d;
+            --accent-orange: #ff9f43;
+            --accent-green: #2ecc71;
+            --font-tech: 'Rajdhani', sans-serif;
+        }
+
+        /* Dropdown and Input Styles */
+        .tech-select,
+        .tech-input {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 4px 12px;
+            font-family: var(--font-tech);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .tech-select:focus,
+        .tech-input:focus {
+            border-color: var(--accent-orange);
+            box-shadow: 0 0 5px var(--accent-orange);
+        }
+
+        /* Improved Date Picker Appearance */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        .btn-reset {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-muted);
+            font-size: 11px;
+            padding: 2px 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+            margin-top: 8px;
+            display: inline-block;
+        }
+
+        .btn-reset:hover {
+            background: rgba(255, 77, 77, 0.2);
+            color: #ff4d4d;
+            border-color: #ff4d4d;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-tech);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Layout Grid */
+        #app-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            grid-template-rows: 60px 1fr;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* 1. Header */
+        header {
+            grid-column: 1 / -1;
+            background: rgba(15, 17, 21, 0.95);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-title::before {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 24px;
+            background: var(--text-main);
+            /* or brand color */
+            border-radius: 2px;
+        }
+
+        .back-btn {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .back-btn:hover {
+            color: white;
+        }
+
+        /* 2. Main Viewer Area */
+        #viewer-area {
+            position: relative;
+            background: radial-gradient(circle at center, #1a1d24 0%, #0f1115 100%);
+            overflow: hidden;
+        }
+
+        /* Top Overlay Metrics (In-Viewer) - Refined Grid Layout */
+        #overlay-metrics {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: grid;
+            grid-template-columns: repeat(4, auto);
+            gap: 0;
+            background: rgba(15, 17, 21, 0.9);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .metric-cell {
+            padding: 10px 20px;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            min-width: 140px;
+        }
+
+        .metric-cell:last-child {
+            border-right: none;
+        }
+
+        .m-label {
+            color: var(--text-muted);
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        .m-value {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        .m-unit {
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-left: 2px;
+        }
+
+        .text-red {
+            color: #ff4d4d;
+            text-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
+        }
+
+        .text-white {
+            color: white;
+        }
+
+        .text-small-red {
+            color: #ff4d4d;
+            font-size: 12px;
+        }
+
+        /* Status Line */
+        #status-line {
+            position: absolute;
+            top: 110px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 10;
+        }
+
+        /* 3. Sidebar */
+        aside {
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            z-index: 50;
+            overflow-y: auto;
+        }
+
+        .panel-section h3 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 8px;
+        }
+
+        /* Alert Box */
+        .alert-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--accent-red);
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .alert-title {
+            color: var(--accent-red);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        .alert-msg {
+            font-size: 14px;
+            color: #ffcccc;
+            margin: 0;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 200px;
+            width: 100%;
+        }
+
+        /* Controls */
+        .control-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-tech {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 10px;
+            font-family: var(--font-tech);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-tech:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+        }
+
+        .btn-tech.active {
+            background: var(--text-main);
+            color: black;
+            border-color: white;
+        }
+
+        /* 3D Floating Labels (CSS2D) */
+        .sensor-label-container {
+            display: flex;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .sensor-ring {
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--accent-orange);
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            box-shadow: 0 0 15px var(--accent-orange), inset 0 0 10px var(--accent-orange);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            position: relative;
+            backdrop-filter: blur(2px);
+        }
+
+        .sensor-ring::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border: 1px solid var(--accent-orange);
+            border-radius: 50%;
+            animation: pulse-ring 2s infinite;
+            opacity: 0;
+        }
+
+        .sensor-value-tag {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            margin-left: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            white-space: nowrap;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app-grid">
+        <header>
+            <div class="header-title">
+                <select id="trafo-select" class="tech-select"
+                    style="font-size: 18px; font-weight: 700; border: none; background: transparent; padding: 0;">
+                    <option value="" disabled selected>YÜKLENİYOR...</option>
+                </select>
+                <span id="trafo-location-tag"
+                    style="font-size: 12px; opacity: 0.6; font-weight:400; margin-left:10px;">• DOĞUŞ TRAFO
+                    MERKEZİ</span>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:20px;">
+                <div id="status-indicator"
+                    style="display:flex; align-items:center; gap:6px; font-size:14px; color:var(--accent-green);">
+                    <div
+                        style="width:8px; height:8px; background:currentColor; border-radius:50%; box-shadow:0 0 8px currentColor;">
+                    </div>
+                    CANLI BAĞLANTI
+                </div>
+                <button id="toggle-audio" style="background:none; border:none; color:white; cursor:pointer;">
+                    🔊
+                </button>
+            </div>
+
+            <a href="/" class="back-link">ÇIKIŞ</a>
+        </header>
+
+        <section id="viewer-area">
+            <!-- 3D Canvas injected here by Three.js -->
+
+            <!-- In-Scene Metrics Overlay (Grid Matching Reference) -->
+            <div id="overlay-metrics">
+                <!-- Row 1 -->
+                <div class="metric-cell">
+                    <span class="m-label">Üst Yağ</span>
+                    <span class="m-value text-red" id="val-top">--</span><span class="m-unit">°C</span>
+                </div>
+                <div class="metric-cell">
+                    <span class="m-label">Ortam</span>
+                    <span class="m-value text-white" id="val-amb">--</span><span class="m-unit">°C</span>
+                </div>
+                <div class="metric-cell" style="border-right:none;">
+                    <span class="m-label">ΔθTurT</span>
+                    <span class="m-value text-red" id="val-delta-rise">--</span><span class="m-unit">°C</span>
+                </div>
+
+                <!-- Row 2 -->
+                <div class="metric-cell" style="grid-column: 1;">
+                    <span class="m-label">Ortam</span>
+                    <span class="m-value text-white" id="val-amb-2">--</span><span class="m-unit">°C</span>
+                </div>
+                <div class="metric-cell">
+                    <span class="m-label">Alt Yağ</span>
+                    <span class="m-value text-white" id="val-bot">--</span><span class="m-unit">°C</span>
+                </div>
+                <div class="metric-cell" style="border-right:none;">
+                    <span class="m-label">ΔTvert</span>
+                    <span class="m-value text-red" id="val-delta-vert">--</span><span class="m-unit">°C</span>
+                </div>
+
+                <!-- Row 3 (Deltas summary) -->
+                <div class="metric-cell">
+                    <span class="m-label">ΔθTo</span>
+                    <span class="m-value text-red" id="val-delta-to">--</span><span class="m-unit">°C</span>
+                </div>
+                <div class="metric-cell" style="grid-column: span 2; border-right:none;">
+                    <span class="m-label">ΔTvert</span>
+                    <span class="m-value text-red" id="val-delta-vert-2">--</span><span class="m-unit">°C</span>
+                </div>
+            </div>
+
+            <div id="status-line">
+                <div
+                    style="width:8px; height:8px; background:currentColor; border-radius:50%; box-shadow:0 0 8px currentColor;">
+                </div>
+                Canlı: Bağlı
+            </div>
+        </section>
+
+        <aside>
+            <div class="panel-section">
+                <h3>SİSTEM DURUMU</h3>
+                <div class="control-group">
+                    <button class="btn-tech active" id="btn-live">CANLI</button>
+                    <button class="btn-tech" id="btn-demo">BENZETME</button>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>ZAMAN FİLTRESİ</h3>
+                <div
+                    style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 4px; display: flex; flex-direction: column; gap: 10px;">
+                    <div>
+                        <label class="m-label" style="display:block; margin-bottom:5px;">Başlangıç</label>
+                        <input type="datetime-local" id="start-date" class="tech-input"
+                            style="width: 100%; box-sizing: border-box;">
+                    </div>
+                    <div>
+                        <label class="m-label" style="display:block; margin-bottom:5px;">Bitiş</label>
+                        <input type="datetime-local" id="end-date" class="tech-input"
+                            style="width: 100%; box-sizing: border-box;">
+                    </div>
+                    <button id="btn-apply-filter" class="btn-tech"
+                        style="padding: 6px; font-size: 12px; margin-top:5px;">UYGULA</button>
+                    <button id="reset-date" class="btn-reset" style="align-self: flex-end;">TEMİZLE</button>
+                </div>
+            </div>
+
+            <!-- Simulation Parameters (Visible in Demo Mode) -->
+            <div class="panel-section" id="sim-params" style="display:none;">
+                <h3>SİMÜLASYON PARAMETRELERİ</h3>
+                <div style="padding: 10px; background: rgba(0,0,0,0.2); border-radius: 4px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <span class="m-label">Yük Faktörü</span>
+                        <span class="m-value" id="lf-display">1.0</span>
+                    </div>
+                    <input type="range" id="lf-slider" min="0.1" max="2.0" step="0.1" value="1.0"
+                        style="width: 100%; accent-color: var(--accent-orange); cursor: pointer;">
+                    <div
+                        style="display:flex; justify-content:space-between; margin-top:5px; font-size:10px; color:var(--text-muted);">
+                        <span>10%</span>
+                        <span>100% (Nominal)</span>
+                        <span>200%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>SON 15 DAKİKA</h3>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>ALARM DURUMU</h3>
+                <div class="alert-box" id="alert-box" style="display:none;">
+                    <div class="alert-title">⚠️ ALARM</div>
+                    <p class="alert-msg">Yüksek Sıcaklık Tespit Edildi!</p>
+                    <div style="margin-top:10px; font-size:20px; font-weight:700; color:white;">
+                        <span id="alert-val">--</span> °C
+                    </div>
+                </div>
+                <div id="no-alerts" style="color:var(--text-muted); font-size:14px; text-align:center; padding:10px;">
+                    Aktif Alarm Yok
+                </div>
+            </div>
+
+            <div class="panel-section" style="margin-top:auto;">
+                <div style="display:flex; justify-content:space-between; color:var(--text-muted); font-size:12px;">
+                    <span>Son Güncelleme:</span>
+                    <span id="last-update" style="color:white;">--:--:--</span>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Pass Trafo ID -->
+    <script>
+        window.TRAFO_ID = "{{ request.args.get('trafo_id', '') }}"; 
+    </script>
+    <script type="module" src="{{ url_for('static', filename='js/twin.js') }}"></script>
+</body>
+
+</html>

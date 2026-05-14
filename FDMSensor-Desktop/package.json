@@ -1,0 +1,66 @@
+{
+  "name": "fdmsensor-desktop",
+  "version": "1.0.0",
+  "description": "FDMSensor Desktop Application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "author": "EnergyHub Teknoloji",
+  "license": "ISC",
+  "build": {
+    "appId": "com.fdmsensor.desktop",
+    "productName": "FDMSensor Desktop",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "package.json",
+      "api_server.exe",
+      "api_server_mac"
+    ],
+    "extraResources": [
+      {
+        "from": "api_server.exe",
+        "to": "api_server.exe",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "api_server_mac",
+        "to": "api_server_mac",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "runAfterFinish": true,
+      "shortcutName": "FDMSensor"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ]
+    }
+  },
+  "devDependencies": {
+    "@types/electron": "^1.4.38",
+    "@types/node": "^25.6.2",
+    "concurrently": "^8.2.2",
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3",
+    "wait-on": "^7.2.0"
+  }
+}

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trafo Termal Yönetim - Teknik Detaylar</title>
+    <!-- Use standard app styles (Light Mode Main UI) -->
+    <style>
+        /* --- STANDARD APP STYLES (From index.html) --- */
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --secondary: #10b981;
+            --secondary-dark: #059669;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --radius: 12px;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 16px 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .app-logo {
+            height: 90px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark);
+            letter-spacing: -0.5px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            font-size: 13px;
+            color: var(--text-light);
+            text-align: right;
+        }
+
+        /* Navigation Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 2px;
+        }
+
+        .tab-link {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            margin-bottom: -4px;
+        }
+
+        .tab-link:hover {
+            color: var(--text-main);
+        }
+
+        .tab-link.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* Content Card */
+        .content-card {
+            background: var(--card-bg);
+            padding: 32px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Technical Content Styles */
+        .tech-section {
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-top: 0;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+
+        p {
+            margin-bottom: 16px;
+            color: var(--text-main);
+        }
+
+        ul {
+            margin-bottom: 16px;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #e0f2fe;
+            color: #0284c7;
+        }
+
+        .formula-box {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 20px 0;
+            color: var(--dark);
+            font-size: 14px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .param-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            font-size: 14px;
+        }
+
+        .param-table th,
+        .param-table td {
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .param-table th {
+            font-weight: 600;
+            color: var(--text-light);
+            background: #f8fafc;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .param-table tr:last-child td {
+            border-bottom: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="brand-container">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="app-logo">
+                <h1>Termal Yönetim Uygulaması</h1>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <span style="font-weight: 600;">{{ current_user.username if current_user.is_authenticated else
+                        'Misafir' }}</span>
+                    ({{ 'Admin' if current_user.is_admin() else 'Kullanıcı' }}) |
+                    <a href="{{ url_for('logout') }}" style="color: var(--danger); text-decoration: none;">Çıkış</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-link" onclick="window.location.href='{{ url_for('index') }}'">Ana Bakış</button>
+            <button class="tab-link" onclick="window.location.href='{{ url_for('index') }}'">Termal Simülasyon</button>
+            <button class="tab-link" onclick="window.location.href='{{ url_for('digital_twin') }}'">FDM Dijital
+                İkiz</button>
+            <button class="tab-link active">Teknik Detaylar</button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content-card">
+            <div class="tech-section">
+                <h2>Termal Modelleme Yaklaşımı</h2>
+                <p>
+                    Bu uygulamada kullanılan termal simülasyon motoru, transformatörlerin ısıl davranışlarını modellemek
+                    için uluslararası
+                    <span class="badge">IEC 60076-7</span> standardını temel almaktadır. Hesaplamalar, sektör standardı
+                    olan açık kaynaklı
+                    <b>Alliander Transformer Thermal Model</b> kütüphanesi kullanılarak yapılmaktadır.
+                </p>
+            </div>
+
+            <div class="tech-section">
+                <h2>1. Modelleme Yöntemi</h2>
+                <p>
+                    Simülasyon, "Toplanmış Parametreler" (Lumped Parameter) yöntemini kullanır. Bu yöntemde
+                    transformatör,
+                    termal kapasiteye sahip bloklar (Yağ, Sargı vb.) olarak modellenir ve sıcaklık değişimleri
+                    diferansiyel denklemlerle
+                    zaman adımına bağlı olarak hesaplanır.
+                </p>
+                <h3>Temel Bileşenler:</h3>
+                <ul>
+                    <li><b>Üst Yağ Sıcaklığı (Top Oil Temperature):</b> Tankın en üst kısmındaki yağın sıcaklığıdır. Yük
+                        kayıpları ve ortam sıcaklığına göre değişir.</li>
+                    <li><b>En Sıcak Nokta (Hot Spot Temperature):</b> Sargıların içindeki en sıcak bölgedir. İzolasyon
+                        ömrünü belirleyen en kritik parametredir.</li>
+                    <li><b>Alt Yağ Sıcaklığı (Bottom Oil Temperature):</b> Radyatör çıkışındaki yağ sıcaklığıdır
+                        (Tahmini değer).</li>
+                </ul>
+            </div>
+
+            <div class="tech-section">
+                <h2>2. Matematiksel Formüller</h2>
+                <p>Simülasyon motoru aşağıdaki temel fark denklemlerini (Difference Equations) kullanır:</p>
+
+                <h3>Üst Yağ Sıcaklığı Değişimi:</h3>
+                <div class="formula-box">
+                    D_theta_oil(t) = D_theta_oil(t-1) + dt/Tau_oil * (D_theta_oil_target - D_theta_oil(t-1))
+                </div>
+                <p>Burada <i>Tau_oil</i> yağın ısıl zaman sabitini, <i>D_theta</i> ise ortam sıcaklığına göre olan
+                    artışı ifade eder.</p>
+
+                <h3>En Sıcak Nokta Artışı:</h3>
+                <div class="formula-box">
+                    Theta_hotspot = Theta_top_oil + Delta_theta_hotspot
+                </div>
+                <p>Hot-spot artışı, sargı kayıplarına ve sargı zaman sabitine bağlı olarak ayrıca hesaplanır.</p>
+            </div>
+
+            <div class="tech-section">
+                <h2>3. Kullanılan Transformatör Parametreleri</h2>
+                <p>Simülasyonda <b>50 kVA Hermetik Tip</b> bir dağıtım transformatörü modellenmiştir. Kullanılan
+                    sabitler
+                    aşağıdadır:</p>
+
+                <table class="param-table">
+                    <thead>
+                        <tr>
+                            <th>Parametre</th>
+                            <th>Değer</th>
+                            <th>Açıklama</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Nominal Güç</td>
+                            <td>50 kVA</td>
+                            <td>Trafonun görünür gücü</td>
+                        </tr>
+                        <tr>
+                            <td>Soğutma Tipi</td>
+                            <td>ONAN</td>
+                            <td>Doğal Yağ / Doğal Hava</td>
+                        </tr>
+                        <tr>
+                            <td>Boşta Kayıp (P0)</td>
+                            <td>160 W</td>
+                            <td>Demir (Çekirdek) kaybı</td>
+                        </tr>
+                        <tr>
+                            <td>Yükte Kayıp (Pk)</td>
+                            <td>1050 W</td>
+                            <td>Bakır (Sargı) kaybı</td>
+                        </tr>
+                        <tr>
+                            <td>Nominal Üst Yağ Artışı</td>
+                            <td>60 K</td>
+                            <td>Tam yükte beklenen yağ ısınması</td>
+                        </tr>
+                        <tr>
+                            <td>Yağ Zaman Sabiti (Tau)</td>
+                            <td>360 dk</td>
+                            <td>Isıl eylemsizlik süresi (6 saat)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tech-section" style="margin-bottom: 0;">
+                <h2>4. Veri Kaynağı ve İşleme</h2>
+                <p>
+                    Simülasyon, "FDM Sensör" cihazından gelen gerçek zamanlı verileri (Ortam Sıcaklığı, Üst/Alt Yağ
+                    Sıcaklığı) kullanır.
+                    Eğer sensör verisi (örneğin Üst Yağ) mevcutsa, model bunu <b>girdi</b> olarak alır ve buna göre En
+                    Sıcak Noktayı hesaplar ("Measured Input" modu).
+                    Eğer sensör verisi yoksa, model sadece Yük ve Ortam Sıcaklığını kullanarak tüm değerleri teorik
+                    olarak hesaplar ("Calculated" modu).
+                </p>
+            </div>
+
+        </div>
+    </div>
+</body>
+
+</html>
