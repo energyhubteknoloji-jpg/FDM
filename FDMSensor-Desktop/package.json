@@ -24,23 +24,11 @@
     ],
     "win": {
       "target": "nsis",
-      "extraResources": [
-        {
-          "from": "api_server.exe",
-          "to": "api_server.exe"
-        }
-      ]
+      "extraResources": ["api_server.exe"]
     },
     "mac": {
-      "target": [
-        "dmg"
-      ],
-      "extraResources": [
-        {
-          "from": "api_server_mac",
-          "to": "api_server_mac"
-        }
-      ]
+      "target": "dmg",
+      "extraResources": ["api_server_mac"]
     },
     "nsis": {
       "oneClick": true,
